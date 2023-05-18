@@ -43,3 +43,17 @@ It branchless_lower_bound(It begin, It end, const T & value)
 {
     return branchless_lower_bound(begin, end, value, std::less<>{});
 }
+
+// https://orlp.net/blog/bitwise-binary-search/
+template<typename It, typename T, typename Cmp>
+It lower_bound(It begin, It end, const T& value, Cmp comp) {
+    size_t n = end - begin;
+    if (n == 0) return begin;
+
+    size_t two_k = size_t(1) << (std::bit_width(n) - 1);
+    size_t b = comp(begin[n / 2], value) ? n - two_k : -1;
+    for (size_t bit = two_k >> 1; bit != 0; bit >>= 1) {
+        if (comp(begin[b + bit], value)) b += bit;
+    }
+    return begin + (b + 1);
+}
